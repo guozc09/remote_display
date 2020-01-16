@@ -4,12 +4,12 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 16:44:43
+ * @LastEditTime : 2020-01-16 22:48:22
  */
 
 #pragma once
 
-#include <pthread.h>
+#include <thread>
 
 #include "TransmissionCommon.h"
 
@@ -37,11 +37,11 @@ class TransmissionServerLo : virtual public TransmissionServer {
     void stop() override;
 
   private:
-    static void *receiveThread(void *arg);
+    void receiveThread();
     TransmissionHandler* mTransmissionHandler{nullptr};
     int mSockConn{-1};
     bool mIsRun{false};
-    pthread_t mTid{0};
+    thread* mRecvThread{nullptr};
 };
 
 }  // namespace remote_display

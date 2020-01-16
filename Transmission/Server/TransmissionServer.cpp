@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 16:38:17
+ * @LastEditTime : 2020-01-16 22:57:10
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -19,6 +19,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <thread>
 
 #include "TransmissionServer.h"
 
@@ -26,41 +27,38 @@ using namespace std;
 
 namespace remote_display {
 
-void *TransmissionServerLo::receiveThread(void *arg) {
-    TransmissionServerLo *transmissionServerLo = (TransmissionServerLo *)arg;
-    int sockConn = transmissionServerLo->mSockConn;
-    if (sockConn == -1) {
-        cerr << "falied!! Invalid sockConn is " << sockConn << endl;
-        return nullptr;
+void TransmissionServerLo::receiveThread() {
+    if (mSockConn == -1) {
+        cerr << "falied!! Invalid mSockConn is " << mSockConn << endl;
+        return;
     }
-    TransmissionHandler *transmissionHandler = transmissionServerLo->mTransmissionHandler;
     DisplayHeader displayHeader;
 
-    while (transmissionServerLo->mIsRun) {
+    while (mIsRun) {
         size_t dataLen = 0;
-        dataLen = recv(sockConn, (void *)&displayHeader, sizeof(displayHeader), 0);
+        dataLen = recv(mSockConn, (void *)&displayHeader, sizeof(displayHeader), 0);
         cout << "display header length = " << displayHeader.mLength
              << " display header type = " << displayHeader.mType << endl;
         switch (displayHeader.mType) {
             case TYPE_PARAM: {
                 DisplayParam *param = new DisplayParam();
-                dataLen = recv(sockConn, (void *)param, displayHeader.mLength, 0);
+                dataLen = recv(mSockConn, (void *)param, displayHeader.mLength, 0);
                 cout << " mWidthPixels: " << param->mWidthPixels
                      << " mHeightPixels: " << param->mHeightPixels << " mFps: " << param->mFps
                      << endl;
-                if (transmissionHandler)
-                    transmissionHandler->setParam(param->mWidthPixels, param->mHeightPixels,
-                                                  param->mFps);
+                if (mTransmissionHandler)
+                    mTransmissionHandler->setParam(param->mWidthPixels, param->mHeightPixels,
+                                                   param->mFps);
                 delete param;
                 break;
             }
             case TYPE_DATA: {
                 char *data = new char[displayHeader.mLength];
-                dataLen = recv(sockConn, (void *)data, displayHeader.mLength, 0);
+                dataLen = recv(mSockConn, (void *)data, displayHeader.mLength, 0);
                 cout << "received data length: " << dataLen << endl;
                 cout << "received data: " << data << endl;
-                if (transmissionHandler)
-                    transmissionHandler->processFrame((uint8_t *)data, dataLen);
+                if (mTransmissionHandler)
+                    mTransmissionHandler->processFrame((uint8_t *)data, dataLen);
                 delete[] data;
                 break;
             }
@@ -70,7 +68,7 @@ void *TransmissionServerLo::receiveThread(void *arg) {
                 break;
         }
     }
-    return nullptr;
+    return;
 }
 
 TransmissionServerLo::TransmissionServerLo(TransmissionHandler *transmissionHandler)
@@ -109,13 +107,18 @@ void TransmissionServerLo::start() {
         close(server_sockfd);
     }
 
-    pthread_create(&mTid, nullptr, receiveThread, this);
+    mRecvThread = new thread(&TransmissionServerLo::receiveThread, this);
 }
 
 void TransmissionServerLo::stop() {
     mIsRun = false;
-    pthread_join(mTid, nullptr);
-    close(mSockConn);
+    if (mRecvThread) {
+        mRecvThread->join();
+        mRecvThread = nullptr;
+    }
+    if (mSockConn != -1) {
+        close(mSockConn);
+    }
 }
 
 }  // namespace remote_display
