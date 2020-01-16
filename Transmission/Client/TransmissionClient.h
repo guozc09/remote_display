@@ -19,10 +19,10 @@ class TransmissionClient {
     virtual int sendData(char* data, size_t length) = 0;
 };
 
-class TransmissionClientLo : virtual public TransmissionClient {
+class TransmissionClientNet : virtual public TransmissionClient {
   public:
-    TransmissionClientLo() = default;
-    virtual ~TransmissionClientLo() = default;
+    TransmissionClientNet() = default;
+    virtual ~TransmissionClientNet() = default;
 
     int transmissionConnect() override;
     void transmissionDisconnect() override;

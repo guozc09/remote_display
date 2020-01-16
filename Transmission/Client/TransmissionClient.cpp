@@ -20,7 +20,7 @@
 
 namespace remote_display {
 
-int TransmissionClientLo::transmissionConnect() {
+int TransmissionClientNet::transmissionConnect() {
     struct sockaddr_in servaddr;
 
     if ((mSockClient = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -44,11 +44,11 @@ int TransmissionClientLo::transmissionConnect() {
     }
 }
 
-void TransmissionClientLo::transmissionDisconnect() {
+void TransmissionClientNet::transmissionDisconnect() {
     close(mSockClient);
 }
 
-int TransmissionClientLo::sendData(char* data, size_t length) {
+int TransmissionClientNet::sendData(char* data, size_t length) {
     int retVal;
     if (!data) {
         printf("failed!! data is null\n");

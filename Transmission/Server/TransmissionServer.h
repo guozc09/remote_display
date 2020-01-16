@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-16 22:48:22
+ * @LastEditTime : 2020-01-17 00:45:54
  */
 
 #pragma once
@@ -28,10 +28,10 @@ class TransmissionServer {
     virtual void stop() = 0;
 };
 
-class TransmissionServerLo : virtual public TransmissionServer {
+class TransmissionServerNet : virtual public TransmissionServer {
   public:
-    TransmissionServerLo(TransmissionHandler* transmissionHandler);
-    virtual ~TransmissionServerLo() = default;
+    TransmissionServerNet(TransmissionHandler* transmissionHandler);
+    virtual ~TransmissionServerNet() = default;
 
     void start() override;
     void stop() override;

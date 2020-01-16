@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-16 22:57:10
+ * @LastEditTime : 2020-01-17 00:46:14
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -27,7 +27,7 @@ using namespace std;
 
 namespace remote_display {
 
-void TransmissionServerLo::receiveThread() {
+void TransmissionServerNet::receiveThread() {
     if (mSockConn == -1) {
         cerr << "falied!! Invalid mSockConn is " << mSockConn << endl;
         return;
@@ -71,11 +71,11 @@ void TransmissionServerLo::receiveThread() {
     return;
 }
 
-TransmissionServerLo::TransmissionServerLo(TransmissionHandler *transmissionHandler)
+TransmissionServerNet::TransmissionServerNet(TransmissionHandler *transmissionHandler)
     : mTransmissionHandler(transmissionHandler) {
 }
 
-void TransmissionServerLo::start() {
+void TransmissionServerNet::start() {
     mIsRun = true;
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -107,13 +107,14 @@ void TransmissionServerLo::start() {
         close(server_sockfd);
     }
 
-    mRecvThread = new thread(&TransmissionServerLo::receiveThread, this);
+    mRecvThread = new thread(&TransmissionServerNet::receiveThread, this);
 }
 
-void TransmissionServerLo::stop() {
+void TransmissionServerNet::stop() {
     mIsRun = false;
     if (mRecvThread) {
         mRecvThread->join();
+        delete mRecvThread;
         mRecvThread = nullptr;
     }
     if (mSockConn != -1) {
