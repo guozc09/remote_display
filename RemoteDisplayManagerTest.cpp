@@ -4,10 +4,11 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-14 17:18:36
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 17:14:29
+ * @LastEditTime : 2020-01-17 08:10:21
  */
 #include <unistd.h>
 #include <iostream>
+#include <thread>
 #include "RemoteDisplayManager.h"
 
 using namespace std;
@@ -27,41 +28,36 @@ class RemoteDisplayPlayerImpl : virtual public RemoteDisplayPlayer {
     }
 };
 
-static void* receivedThread(void* arg) {
+static void receivedThread() {
     RemoteDisplayManager& instance = RemoteDisplayManager::getInstance();
     string name = "local8368UReceiver";
     shared_ptr<RemoteDisplayPlayer> player =
         shared_ptr<RemoteDisplayPlayer>(new RemoteDisplayPlayerImpl());
     RemoteDisplay* remoteDisplay =
         instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player);
-    return nullptr;
+    return;
 }
 
-static void* sendThread(void* arg) {
+static void sendThread() {
     RemoteDisplayManager& instance = RemoteDisplayManager::getInstance();
     string name = "local8368USender";
-    RemoteDisplay* remoteDisplay =
-        instance.getRemoteDisplay(name, ROLE_SENDER, TYPE_SOCKET_NET);
+    RemoteDisplay* remoteDisplay = instance.getRemoteDisplay(name, ROLE_SENDER, TYPE_SOCKET_NET);
     uint8_t dataBuf[] = "12345";
     while (1) {
         remoteDisplay->setParam(1024, 600, 30);
         remoteDisplay->processFrame(dataBuf, sizeof(dataBuf));
         sleep(1);
     }
-    return nullptr;
+    return;
 }
 
 int main(int argc, const char** argv) {
-    pthread_t receiveTid;
-    pthread_t sendTid;
-    pthread_create(&receiveTid, nullptr, receivedThread, nullptr);
-
+    thread receiveTid(receivedThread);
     sleep(1);
+    thread sendTid(sendThread);
 
-    pthread_create(&sendTid, nullptr, sendThread, nullptr);
-
-    pthread_join(sendTid, nullptr);
-    pthread_join(receiveTid, nullptr);
+    sendTid.join();
+    receiveTid.join();
 
     return 0;
 }

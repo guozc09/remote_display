@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-17 00:46:14
+ * @LastEditTime : 2020-01-17 08:02:29
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -76,6 +76,10 @@ TransmissionServerNet::TransmissionServerNet(TransmissionHandler *transmissionHa
 }
 
 void TransmissionServerNet::start() {
+    if (mIsRun) {
+        printf("TransmissionServerNet has been started!!\n");
+        return;
+    }
     mIsRun = true;
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
