@@ -31,7 +31,7 @@ class TransmissionServer {
 class TransmissionServerNet : virtual public TransmissionServer {
   public:
     TransmissionServerNet(TransmissionHandler* transmissionHandler);
-    virtual ~TransmissionServerNet() = default;
+    virtual ~TransmissionServerNet();
 
     void start() override;
     void stop() override;

@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-17 08:02:29
+ * @LastEditTime : 2020-01-17 19:59:32
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -35,7 +35,7 @@ void TransmissionServerNet::receiveThread() {
     DisplayHeader displayHeader;
 
     while (mIsRun) {
-        size_t dataLen = 0;
+        int dataLen = 0;
         dataLen = recv(mSockConn, (void *)&displayHeader, sizeof(displayHeader), 0);
         cout << "display header length = " << displayHeader.mLength
              << " display header type = " << displayHeader.mType << endl;
@@ -43,6 +43,8 @@ void TransmissionServerNet::receiveThread() {
             case TYPE_PARAM: {
                 DisplayParam *param = new DisplayParam();
                 dataLen = recv(mSockConn, (void *)param, displayHeader.mLength, 0);
+                if (dataLen <= 0)
+                    mIsRun = false;
                 cout << " mWidthPixels: " << param->mWidthPixels
                      << " mHeightPixels: " << param->mHeightPixels << " mFps: " << param->mFps
                      << endl;
@@ -55,6 +57,8 @@ void TransmissionServerNet::receiveThread() {
             case TYPE_DATA: {
                 char *data = new char[displayHeader.mLength];
                 dataLen = recv(mSockConn, (void *)data, displayHeader.mLength, 0);
+                if (dataLen <= 0)
+                    mIsRun = false;
                 cout << "received data length: " << dataLen << endl;
                 cout << "received data: " << data << endl;
                 if (mTransmissionHandler)
@@ -73,6 +77,9 @@ void TransmissionServerNet::receiveThread() {
 
 TransmissionServerNet::TransmissionServerNet(TransmissionHandler *transmissionHandler)
     : mTransmissionHandler(transmissionHandler) {
+}
+
+TransmissionServerNet::~TransmissionServerNet() {
 }
 
 void TransmissionServerNet::start() {
@@ -123,6 +130,7 @@ void TransmissionServerNet::stop() {
     }
     if (mSockConn != -1) {
         close(mSockConn);
+        mSockConn = -1;
     }
 }
 

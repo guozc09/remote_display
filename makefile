@@ -1,20 +1,13 @@
 ﻿CXX = g++
 CXXFLAG = -std=c++11
 LIBS = -lpthread
-TRANSMISSION_DIR = ./Transmission
-CLIENT_DIR = $(TRANSMISSION_DIR)/Client
-SERVER_DIR = $(TRANSMISSION_DIR)/Server
-REMOTEDISPLAY_DIR = ./RemoteDisplay
 INCLUDE = -I./ \
-          -I$(TRANSMISSION_DIR) \
-          -I$(CLIENT_DIR) \
-		  -I$(SERVER_DIR) \
-		  -I$(REMOTEDISPLAY_DIR)
-SOURCES += $(CLIENT_DIR)/TransmissionClient.cpp \
-           $(SERVER_DIR)/TransmissionServer.cpp \
-           $(REMOTEDISPLAY_DIR)/RemoteDisplay.cpp \
-		   ./RemoteDisplayManager.cpp \
-		   ./RemoteDisplayManagerTest.cpp
+          -I./include
+SOURCES += ./src/TransmissionClient.cpp \
+           ./src/TransmissionServer.cpp \
+           ./src/RemoteDisplay.cpp \
+		   ./src/RemoteDisplayManager.cpp \
+		   ./src/RemoteDisplayManagerTest.cpp
 OBJECTS = $(patsubst %.cpp,%.o, $(SOURCES))
 TARGET = manager_test
 
