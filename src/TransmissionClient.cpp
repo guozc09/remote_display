@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 16:51:53
+ * @LastEditTime : 2020-01-19 20:00:06
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -49,18 +49,24 @@ void TransmissionClientNet::transmissionDisconnect() {
 }
 
 int TransmissionClientNet::sendData(char* data, size_t length) {
-    int retVal;
+    int sendSize = 0;
     if (!data) {
         printf("failed!! data is null\n");
         return -1;
     }
 
-    retVal = send(mSockClient, data, length, 0);
-    if (retVal < 0) {
-        printf("send image error: %s(errno: %d)\n", strerror(errno), errno);
-        return -1;
+    while (length > 0)
+    {
+        sendSize = send(mSockClient, data, length, 0);
+        if(sendSize < 0) {
+            printf("send image error: %s(errno: %d)\n", strerror(errno), errno);
+            return -1;
+        }
+        length = length - sendSize;
+        data += sendSize;
     }
-    return retVal;
+
+    return sendSize;
 }
 
 }  // namespace remote_display
