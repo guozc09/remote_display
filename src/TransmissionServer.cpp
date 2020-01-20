@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-19 20:03:54
+ * @LastEditTime : 2020-01-20 23:10:31
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -97,7 +97,11 @@ void TransmissionServerNet::start() {
     }
     mIsRun = true;
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
+    int opt = 1;
+    if (setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt, sizeof(opt)) == -1) {
+        perror("setsockopt");
+        return;
+    }
     struct sockaddr_in server_sockaddr;
     server_sockaddr.sin_family = AF_INET;
     server_sockaddr.sin_port = htons(PORT);
