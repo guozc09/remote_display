@@ -6,7 +6,9 @@
  * @LastEditors  : Zhc Guo
  * @LastEditTime : 2020-01-15 17:00:00
  */
-#pragma once
+#ifndef __REMOTE_DISPLAY_H__
+#define __REMOTE_DISPLAY_H__
+
 #include <stdint.h>
 #include <memory>
 #include "TransmissionClient.h"
@@ -57,3 +59,5 @@ class RemoteDisplayReceiver : virtual public RemoteDisplay, virtual public Trans
 };
 
 }  // namespace remote_display
+
+#endif // __REMOTE_DISPLAY_H__

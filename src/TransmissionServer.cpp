@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-20 23:10:31
+ * @LastEditTime : 2020-01-19 20:03:54
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -95,11 +95,11 @@ void TransmissionServerNet::start() {
         printf("TransmissionServerNet has been started!!\n");
         return;
     }
-    mIsRun = true;
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    int opt = 1;
-    if (setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt, sizeof(opt)) == -1) {
-        perror("setsockopt");
+    int option = 1;
+    if (setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, (char *) &option, (socklen_t)sizeof(option)) == -1) {
+        printf("setsockopt error!! strerror:%s errno:%d\n", strerror(errno), errno);
+        close(server_sockfd);
         return;
     }
     struct sockaddr_in server_sockaddr;
@@ -129,6 +129,7 @@ void TransmissionServerNet::start() {
         printf("connect successful!\n");
         close(server_sockfd);
     }
+    mIsRun = true;
 
     mRecvThread = new thread(&TransmissionServerNet::receiveThread, this);
 }

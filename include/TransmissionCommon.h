@@ -4,9 +4,11 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-14 15:37:06
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 15:07:02
+ * @LastEditTime : 2020-02-06 09:19:03
  */
-#pragma once
+#ifndef __TRANSMISSION_COMMON_H__
+#define __TRANSMISSION_COMMON_H__
+
 namespace remote_display {
 
 #define IP "127.0.0.1"
@@ -42,3 +44,5 @@ struct DisplayParam {
 };
 
 }  // namespace remote_display
+
+#endif // __TRANSMISSION_COMMON_H__

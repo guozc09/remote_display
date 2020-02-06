@@ -6,7 +6,9 @@
  * @LastEditors  : Zhc Guo
  * @LastEditTime : 2020-01-15 17:05:58
  */
-#pragma once
+#ifndef __REMOTE_DISPLAY_MANAGER_H__
+#define __REMOTE_DISPLAY_MANAGER_H__
+
 #include <map>
 #include <string>
 #include "RemoteDisplay.h"
@@ -24,9 +26,9 @@ class RemoteDisplayManager {
         static RemoteDisplayManager instance;
         return instance;
     }
-    RemoteDisplay* getRemoteDisplay(string& name, RemoteDisplayRole role, TransmissonType type,
+    RemoteDisplay* getRemoteDisplay(string name, RemoteDisplayRole role, TransmissonType type,
                                     shared_ptr<RemoteDisplayPlayer> player = nullptr);
-    void releaseRemoteDisplay(string& name);
+    void releaseRemoteDisplay(string name);
 
   private:
     RemoteDisplayManager() = default;
@@ -34,3 +36,5 @@ class RemoteDisplayManager {
 };
 
 }  // namespace remote_display
+
+#endif // __REMOTE_DISPLAY_MANAGER_H__

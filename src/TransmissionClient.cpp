@@ -35,17 +35,24 @@ int TransmissionClientNet::transmissionConnect() {
         return -1;
     }
 
-    if (connect(mSockClient, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-        printf("connect error: %s(errno: %d)\n", strerror(errno), errno);
-        return -1;
-    } else {
-        printf("connect successful!\n");
-        return 0;
+    for (int connCnt = 1; connCnt <= 5; connCnt++) {
+        if (connect(mSockClient, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+            printf("connect error: %s(errno: %d), connect times:%d\n", strerror(errno), errno,
+                   connCnt);
+        } else {
+            printf("connect successful!\n");
+            return 0;
+        }
     }
+    return -1;
 }
 
 void TransmissionClientNet::transmissionDisconnect() {
-    close(mSockClient);
+    if (mSockClient == -1) {
+        close(mSockClient);
+        shutdown(mSockClient, SHUT_RDWR);
+        mSockClient = -1;
+    }
 }
 
 int TransmissionClientNet::sendData(char* data, size_t length) {
@@ -55,11 +62,15 @@ int TransmissionClientNet::sendData(char* data, size_t length) {
         return -1;
     }
 
-    while (length > 0)
-    {
+    if (mSockClient == -1) {
+        printf("failed!! mSockClient is -1\n");
+        return -1;
+    }
+
+    while (length > 0) {
         sendSize = send(mSockClient, data, length, 0);
-        if(sendSize < 0) {
-            printf("send image error: %s(errno: %d)\n", strerror(errno), errno);
+        if (sendSize < 0) {
+            printf("send data error: %s(errno: %d)\n", strerror(errno), errno);
             return -1;
         }
         length = length - sendSize;

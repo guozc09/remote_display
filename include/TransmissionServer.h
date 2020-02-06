@@ -4,10 +4,10 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-19 19:43:10
+ * @LastEditTime : 2020-01-17 00:45:54
  */
-
-#pragma once
+#ifndef __TRANSMISSION_SERVER_H__
+#define __TRANSMISSION_SERVER_H__
 
 #include <thread>
 
@@ -38,7 +38,7 @@ class TransmissionServerNet : virtual public TransmissionServer {
 
   private:
     void receiveThread();
-    bool recvAll(int sock, char* buffer, size_t size);
+    bool recvAll(int sock, char *buffer, size_t size);
     TransmissionHandler* mTransmissionHandler{nullptr};
     int mSockConn{-1};
     bool mIsRun{false};
@@ -46,3 +46,5 @@ class TransmissionServerNet : virtual public TransmissionServer {
 };
 
 }  // namespace remote_display
+
+#endif // __TRANSMISSION_SERVER_H__

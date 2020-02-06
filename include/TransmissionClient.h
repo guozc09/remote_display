@@ -6,8 +6,9 @@
  * @LastEditors  : Zhc Guo
  * @LastEditTime : 2020-01-15 16:49:43
  */
+#ifndef __TRANSMISSION_CLIENT_H__
+#define __TRANSMISSION_CLIENT_H__
 
-#pragma once
 #include "TransmissionCommon.h"
 
 namespace remote_display {
@@ -33,3 +34,5 @@ class TransmissionClientNet : virtual public TransmissionClient {
 };
 
 }  // namespace remote_display
+
+#endif // __TRANSMISSION_CLIENT_H__
