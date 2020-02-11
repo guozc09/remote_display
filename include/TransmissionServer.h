@@ -4,14 +4,17 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-17 00:45:54
+ * @LastEditTime : 2020-02-11 23:16:38
  */
 #ifndef __TRANSMISSION_SERVER_H__
 #define __TRANSMISSION_SERVER_H__
 
 #include <thread>
+#include <poll.h>
 
 #include "TransmissionCommon.h"
+
+#define OPEN_MAX 10
 
 using namespace std;
 namespace remote_display {
@@ -37,12 +40,12 @@ class TransmissionServerNet : virtual public TransmissionServer {
     void stop() override;
 
   private:
-    void receiveThread();
     bool recvAll(int sock, char *buffer, size_t size);
+    void handleData(int& sock);
+    void transServThread();
     TransmissionHandler* mTransmissionHandler{nullptr};
-    int mSockConn{-1};
-    bool mIsRun{false};
-    thread* mRecvThread{nullptr};
+    struct pollfd mClient[OPEN_MAX];
+    thread* mTransThread{nullptr};
 };
 
 }  // namespace remote_display

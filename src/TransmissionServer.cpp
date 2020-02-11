@@ -4,11 +4,12 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-19 20:03:54
+ * @LastEditTime : 2020-02-11 23:46:50
  */
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,81 +24,120 @@
 
 #include "TransmissionServer.h"
 
+#define INFTIM 1024
+
 using namespace std;
 
 namespace remote_display {
 
-void TransmissionServerNet::receiveThread() {
-    if (mSockConn == -1) {
-        cerr << "falied!! Invalid mSockConn is " << mSockConn << endl;
-        return;
-    }
-    DisplayHeader displayHeader;
-
-    while (mIsRun) {
-        bool isComplete = false;
-        isComplete = recvAll(mSockConn, (char *)&displayHeader, sizeof(displayHeader));
-        if (!isComplete) {
-            mIsRun = false;
-            return;
-        }
-        cout << "display header length = " << displayHeader.mLength
-             << " display header type = " << displayHeader.mType << endl;
-        switch (displayHeader.mType) {
-            case TYPE_PARAM: {
-                DisplayParam *param = new DisplayParam();
-                isComplete = recvAll(mSockConn, (char *)param, displayHeader.mLength);
-                if (isComplete) {
-                    cout << " mWidthPixels: " << param->mWidthPixels
-                         << " mHeightPixels: " << param->mHeightPixels << " mFps: " << param->mFps
-                         << endl;
-                    if (mTransmissionHandler)
-                        mTransmissionHandler->setParam(param->mWidthPixels, param->mHeightPixels,
-                                                       param->mFps);
-                } else {
-                    mIsRun = false;
-                }
-                delete param;
-                break;
-            }
-            case TYPE_DATA: {
-                char *data = new char[displayHeader.mLength];
-                isComplete = recvAll(mSockConn, (char *)data, displayHeader.mLength);
-                if (isComplete) {
-                    cout << "received data length: " << displayHeader.mLength << endl;
-                    cout << "received data: " << data << endl;
-                    if (mTransmissionHandler)
-                        mTransmissionHandler->processFrame((uint8_t *)data, displayHeader.mLength);
-                } else {
-                    mIsRun = false;
-                }
-                delete[] data;
-                break;
-            }
-            default:
-                cout << "Types not currently supported!! type[" << displayHeader.mType << "]"
-                     << endl;
-                break;
-        }
-    }
-    return;
-}
-
 TransmissionServerNet::TransmissionServerNet(TransmissionHandler *transmissionHandler)
     : mTransmissionHandler(transmissionHandler) {
+    for (int i = 0; i < OPEN_MAX; i++) {
+        mClient[i].fd = -1;
+    }
 }
 
 TransmissionServerNet::~TransmissionServerNet() {
 }
 
 void TransmissionServerNet::start() {
-    if (mIsRun) {
-        printf("TransmissionServerNet has been started!!\n");
+    if (mTransThread == nullptr)
+        mTransThread = new thread(&TransmissionServerNet::transServThread, this);
+    else
+        cout << "TransmissionServerNet has been started, do nothing." << endl;
+}
+
+void TransmissionServerNet::stop() {
+    if (mTransThread) {
+        delete mTransThread;
+        mTransThread = nullptr;
+    }
+    for (int i = 0; i < OPEN_MAX; i++) {
+        if (mClient[i].fd != -1) {
+            close(mClient[i].fd);
+            mClient[i].fd = -1;
+        }
+    }
+}
+
+bool TransmissionServerNet::recvAll(int sock, char *buffer, size_t size) {
+    while (size > 0) {
+        int recvSize = recv(sock, buffer, size, 0);
+        if (recvSize <= 0) {
+            return false;
+        }
+        size = size - recvSize;
+        buffer += recvSize;
+    }
+    return true;
+}
+
+void TransmissionServerNet::handleData(int &sock) {
+    if (sock == -1) {
+        cerr << "falied!! Invalid sock is " << sock << endl;
         return;
     }
+    DisplayHeader displayHeader;
+    bool isComplete = false;
+    isComplete = recvAll(sock, (char *)&displayHeader, sizeof(displayHeader));
+    if (!isComplete) {
+        close(sock);
+        sock = -1;
+        cerr << "receive error!!" << endl;
+        // detach
+        return;
+    }
+    cout << "display header length = " << displayHeader.mLength
+         << " display header type = " << displayHeader.mType << endl;
+    switch (displayHeader.mType) {
+        case TYPE_PARAM: {
+            DisplayParam *param = new DisplayParam();
+            isComplete = recvAll(sock, (char *)param, displayHeader.mLength);
+            if (isComplete) {
+                cout << " mWidthPixels: " << param->mWidthPixels
+                     << " mHeightPixels: " << param->mHeightPixels << " mFps: " << param->mFps
+                     << endl;
+                if (mTransmissionHandler)
+                    mTransmissionHandler->setParam(param->mWidthPixels, param->mHeightPixels,
+                                                   param->mFps);
+            } else {
+                close(sock);
+                sock = -1;
+                cerr << "receive error!!" << endl;
+                // detach
+            }
+            delete param;
+            break;
+        }
+        case TYPE_DATA: {
+            char *data = new char[displayHeader.mLength];
+            isComplete = recvAll(sock, (char *)data, displayHeader.mLength);
+            if (isComplete) {
+                cout << "received data length: " << displayHeader.mLength << endl;
+                cout << "received data: " << data << endl;
+                if (mTransmissionHandler)
+                    mTransmissionHandler->processFrame((uint8_t *)data, displayHeader.mLength);
+            } else {
+                close(sock);
+                sock = -1;
+                cerr << "receive error!!" << endl;
+                // detach
+            }
+            delete[] data;
+            break;
+        }
+        default:
+            cout << "Types not currently supported!! type[" << displayHeader.mType << "]" << endl;
+            break;
+    }
+    return;
+}
+
+void TransmissionServerNet::transServThread() {
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
     int option = 1;
-    if (setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, (char *) &option, (socklen_t)sizeof(option)) == -1) {
+    if (setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&option,
+                   (socklen_t)sizeof(option)) == -1) {
         printf("setsockopt error!! strerror:%s errno:%d\n", strerror(errno), errno);
         close(server_sockfd);
         return;
@@ -117,45 +157,50 @@ void TransmissionServerNet::start() {
         return;
     }
 
+    mClient[0].fd = server_sockfd;
+    mClient[0].events = POLLRDNORM;  // poll read normal
+
+    int maxi = 0;
     struct sockaddr_in client_addr;
     socklen_t length = sizeof(client_addr);
-
-    mSockConn = accept(server_sockfd, (struct sockaddr *)&client_addr, &length);
-    if (mSockConn < 0) {
-        perror("connect error!!");
-        close(server_sockfd);
-        return;
-    } else {
-        printf("connect successful!\n");
-        close(server_sockfd);
+    while (true) {
+        int nready = poll(mClient, maxi + 1, INFTIM);
+        if (mClient[0].revents & POLLRDNORM) {
+            // this means new client connection request come
+            int connfd = accept(server_sockfd, (struct sockaddr *)&client_addr, &length);
+            if (connfd < 0) {
+                perror("accept error!!");
+                continue;
+            } else {
+                printf("accept successful!\n");
+            }
+            // updates maxi, and check if i out of limition of OPEN_MAX
+            int i;
+            for (i = 1; i < OPEN_MAX; i++) {
+                if (mClient[i].fd < 0) {
+                    mClient[i].fd = connfd;
+                    mClient[i].events = (POLLRDNORM | POLLERR);
+                    break;
+                }
+            }
+            if (i == OPEN_MAX) {
+                perror("too many client requests ");
+                return;
+            }
+            if (i > maxi)
+                maxi = i;
+            if (--nready <= 0)
+                continue;
+        }
+        for (int i = 1; i <= maxi; i++) {
+            if (mClient[i].fd < 0)
+                continue;  // continue the sub for cycle
+            if (mClient[i].revents & (POLLRDNORM | POLLERR)) {
+                // attach
+                handleData(mClient[i].fd);
+            }
+        }
     }
-    mIsRun = true;
-
-    mRecvThread = new thread(&TransmissionServerNet::receiveThread, this);
-}
-
-void TransmissionServerNet::stop() {
-    mIsRun = false;
-    if (mRecvThread) {
-        mRecvThread->join();
-        delete mRecvThread;
-        mRecvThread = nullptr;
-    }
-    if (mSockConn != -1) {
-        close(mSockConn);
-        mSockConn = -1;
-    }
-}
-
-bool TransmissionServerNet::recvAll(int sock, char *buffer, size_t size) {
-    while (size > 0) {
-        int recvSize = recv(sock, buffer, size, 0);
-        if (recvSize < 0)
-            return false;
-        size = size - recvSize;
-        buffer += recvSize;
-    }
-    return true;
 }
 
 }  // namespace remote_display
