@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Transport server
+ * @Descripttion: Transport server net
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
- * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-02-11 23:46:50
+ * @LastEditors: Zhc Guo
+ * @LastEditTime: 2020-02-25 00:44:57
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -22,7 +22,7 @@
 #include <iostream>
 #include <thread>
 
-#include "TransmissionServer.h"
+#include "TransmissionServerNet.h"
 
 #define INFTIM 1024
 
@@ -30,14 +30,15 @@ using namespace std;
 
 namespace remote_display {
 
-TransmissionServerNet::TransmissionServerNet(TransmissionHandler *transmissionHandler)
-    : mTransmissionHandler(transmissionHandler) {
+TransmissionServerNet::TransmissionServerNet(TransmissionServCbkIf *transServCbk) : mTransServCbk(transServCbk) {
     for (int i = 0; i < OPEN_MAX; i++) {
         mClient[i].fd = -1;
     }
 }
 
 TransmissionServerNet::~TransmissionServerNet() {
+    if (mDataBuf)
+        free(mDataBuf);
 }
 
 void TransmissionServerNet::start() {
@@ -72,66 +73,53 @@ bool TransmissionServerNet::recvAll(int sock, char *buffer, size_t size) {
     return true;
 }
 
-void TransmissionServerNet::handleData(int &sock) {
+int TransmissionServerNet::handleData(int &sock) {
     if (sock == -1) {
         cerr << "falied!! Invalid sock is " << sock << endl;
-        return;
+        return -1;
     }
-    DisplayHeader displayHeader;
+    TransHeader transHeader;
     bool isComplete = false;
-    isComplete = recvAll(sock, (char *)&displayHeader, sizeof(displayHeader));
+    isComplete = recvAll(sock, (char *)&transHeader, sizeof(transHeader));
     if (!isComplete) {
         close(sock);
         sock = -1;
         cerr << "receive error!!" << endl;
         // detach
-        return;
+        return -1;
     }
-    cout << "display header length = " << displayHeader.mLength
-         << " display header type = " << displayHeader.mType << endl;
-    switch (displayHeader.mType) {
-        case TYPE_PARAM: {
-            DisplayParam *param = new DisplayParam();
-            isComplete = recvAll(sock, (char *)param, displayHeader.mLength);
-            if (isComplete) {
-                cout << " mWidthPixels: " << param->mWidthPixels
-                     << " mHeightPixels: " << param->mHeightPixels << " mFps: " << param->mFps
-                     << endl;
-                if (mTransmissionHandler)
-                    mTransmissionHandler->setParam(param->mWidthPixels, param->mHeightPixels,
-                                                   param->mFps);
-            } else {
-                close(sock);
-                sock = -1;
-                cerr << "receive error!!" << endl;
-                // detach
-            }
-            delete param;
-            break;
-        }
-        case TYPE_DATA: {
-            char *data = new char[displayHeader.mLength];
-            isComplete = recvAll(sock, (char *)data, displayHeader.mLength);
-            if (isComplete) {
-                cout << "received data length: " << displayHeader.mLength << endl;
-                cout << "received data: " << data << endl;
-                if (mTransmissionHandler)
-                    mTransmissionHandler->processFrame((uint8_t *)data, displayHeader.mLength);
-            } else {
-                close(sock);
-                sock = -1;
-                cerr << "receive error!!" << endl;
-                // detach
-            }
-            delete[] data;
-            break;
-        }
-        default:
-            cout << "Types not currently supported!! type[" << displayHeader.mType << "]" << endl;
-            break;
+    cout << "display header length = " << transHeader.mLength
+         << " display header type = " << transHeader.mType << endl;
+
+    if (mDataLen < transHeader.mLength) {
+        mDataBuf = (char *)realloc(mDataBuf, transHeader.mLength);
     }
-    return;
-}
+    if (mDataBuf == nullptr) {
+        cerr << "mDataLen is null\n";
+        close(sock);
+        sock = -1;
+        return -1;
+    }
+
+    isComplete = recvAll(sock, mDataBuf, transHeader.mLength);
+    if (isComplete) {
+        cout << "received data length: " << transHeader.mLength << endl;
+        cout << "received data: " << mDataBuf << endl;
+        if (mTransServCbk)
+            mTransServCbk->dataIsAvailable(transHeader.mType, mDataBuf, transHeader.mLength);
+        else
+            cerr << "mTransServCbk is null";
+        
+    } else {
+        close(sock);
+        sock = -1;
+        cerr << "receive error!!" << endl;
+        // detach
+        return -1;
+    }
+
+    return 0;
+}  // namespace remote_display
 
 void TransmissionServerNet::transServThread() {
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -197,10 +185,12 @@ void TransmissionServerNet::transServThread() {
                 continue;  // continue the sub for cycle
             if (mClient[i].revents & (POLLRDNORM | POLLERR)) {
                 // attach
-                handleData(mClient[i].fd);
+                if (handleData(mClient[i].fd) == -1)
+                    return;
             }
         }
     }
+    return;
 }
 
 }  // namespace remote_display

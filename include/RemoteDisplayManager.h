@@ -27,7 +27,7 @@ class RemoteDisplayManager {
         return instance;
     }
     RemoteDisplay* getRemoteDisplay(string name, RemoteDisplayRole role, TransmissonType type,
-                                    shared_ptr<RemoteDisplayPlayer> player = nullptr);
+                                    shared_ptr<RemoteDisplay> player = nullptr);
     void releaseRemoteDisplay(string name);
 
   private:

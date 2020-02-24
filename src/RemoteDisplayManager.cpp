@@ -12,7 +12,7 @@ namespace remote_display {
 
 RemoteDisplay* RemoteDisplayManager::getRemoteDisplay(string name, RemoteDisplayRole role,
                                                       TransmissonType type,
-                                                      shared_ptr<RemoteDisplayPlayer> player) {
+                                                      shared_ptr<RemoteDisplay> player) {
     map<string, RemoteDisplay*>::iterator iter = mRemoteDisplayMap.find(name);
     if (iter != mRemoteDisplayMap.end()) {
         return iter->second;

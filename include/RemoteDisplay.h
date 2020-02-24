@@ -3,16 +3,16 @@
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-11 10:30:09
- * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 17:00:00
+ * @LastEditors: Zhc Guo
+ * @LastEditTime: 2020-02-25 00:30:47
  */
 #ifndef __REMOTE_DISPLAY_H__
 #define __REMOTE_DISPLAY_H__
 
 #include <stdint.h>
 #include <memory>
-#include "TransmissionClient.h"
-#include "TransmissionServer.h"
+#include "TransmissionClientInterface.h"
+#include "TransmissionServerInterface.h"
 
 using std::shared_ptr;
 
@@ -23,14 +23,9 @@ enum RemoteDisplayRole {
     ROLE_RECEVIER,
 };
 
-class RemoteDisplayPlayer {
-  public:
-    virtual int setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) = 0;
-    virtual int processFrame(uint8_t *data, size_t length) = 0;
-};
-
 class RemoteDisplay {
   public:
+    virtual ~RemoteDisplay() = default;
     virtual int setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) = 0;
     virtual int processFrame(uint8_t *data, size_t length) = 0;
 };
@@ -43,19 +38,20 @@ class RemoteDisplaySender : virtual public RemoteDisplay {
     int processFrame(uint8_t *data, size_t length) override;
 
   private:
-    TransmissionClient *mTransmissionClient{nullptr};
+    TransmissionClientIf *mTransCli{nullptr};
 };
 
-class RemoteDisplayReceiver : virtual public RemoteDisplay, virtual public TransmissionHandler {
+class RemoteDisplayReceiver : virtual public RemoteDisplay {
   public:
-    RemoteDisplayReceiver(TransmissonType type, shared_ptr<RemoteDisplayPlayer> &player);
+    RemoteDisplayReceiver(TransmissonType type, shared_ptr<RemoteDisplay> &player);
     ~RemoteDisplayReceiver();
     int setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) override;
     int processFrame(uint8_t *data, size_t length) override;
 
   private:
-    TransmissionServer *mTransmissionServer{nullptr};
-    shared_ptr<RemoteDisplayPlayer> mPlayer{nullptr};
+    TransmissionServCbkIf *mTransServCbk;
+    TransmissionServerIf *mTransServ;
+    shared_ptr<RemoteDisplay> mPlayer;
 };
 
 }  // namespace remote_display

@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Transport client
+ * @Descripttion: Transport client net
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
- * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-19 20:00:06
+ * @LastEditors: Zhc Guo
+ * @LastEditTime: 2020-02-24 22:46:02
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -16,14 +16,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "TransmissionClient.h"
+#include "TransmissionClientNet.h"
 
 namespace remote_display {
 
 int TransmissionClientNet::transmissionConnect() {
     struct sockaddr_in servaddr;
 
-    if ((mSockClient = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((mSockCli = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
         return -1;
     }
@@ -36,7 +36,7 @@ int TransmissionClientNet::transmissionConnect() {
     }
 
     for (int connCnt = 1; connCnt <= 5; connCnt++) {
-        if (connect(mSockClient, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+        if (connect(mSockCli, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
             printf("connect error: %s(errno: %d), connect times:%d\n", strerror(errno), errno,
                    connCnt);
         } else {
@@ -48,10 +48,10 @@ int TransmissionClientNet::transmissionConnect() {
 }
 
 void TransmissionClientNet::transmissionDisconnect() {
-    if (mSockClient == -1) {
-        close(mSockClient);
-        shutdown(mSockClient, SHUT_RDWR);
-        mSockClient = -1;
+    if (mSockCli == -1) {
+        close(mSockCli);
+        shutdown(mSockCli, SHUT_RDWR);
+        mSockCli = -1;
     }
 }
 
@@ -62,13 +62,13 @@ int TransmissionClientNet::sendData(char* data, size_t length) {
         return -1;
     }
 
-    if (mSockClient == -1) {
-        printf("failed!! mSockClient is -1\n");
+    if (mSockCli == -1) {
+        printf("failed!! mSockCli is -1\n");
         return -1;
     }
 
     while (length > 0) {
-        sendSize = send(mSockClient, data, length, 0);
+        sendSize = send(mSockCli, data, length, 0);
         if (sendSize < 0) {
             printf("send data error: %s(errno: %d)\n", strerror(errno), errno);
             return -1;

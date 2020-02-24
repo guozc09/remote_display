@@ -3,8 +3,8 @@
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-14 17:18:36
- * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-17 08:10:21
+ * @LastEditors: Zhc Guo
+ * @LastEditTime: 2020-02-24 22:39:34
  */
 #include <unistd.h>
 #include <iostream>
@@ -14,7 +14,7 @@
 using namespace std;
 using namespace remote_display;
 
-class RemoteDisplayPlayerImpl : virtual public RemoteDisplayPlayer {
+class RemoteDisplayPlayerImpl : virtual public RemoteDisplay {
   public:
     RemoteDisplayPlayerImpl() = default;
     ~RemoteDisplayPlayerImpl() = default;
@@ -30,9 +30,8 @@ class RemoteDisplayPlayerImpl : virtual public RemoteDisplayPlayer {
 
 static void receivedThread() {
     RemoteDisplayManager& instance = RemoteDisplayManager::getInstance();
-    string name = "local8368UReceiver";
-    shared_ptr<RemoteDisplayPlayer> player =
-        shared_ptr<RemoteDisplayPlayer>(new RemoteDisplayPlayerImpl());
+    string name = "RDReceiver";
+    shared_ptr<RemoteDisplay> player = shared_ptr<RemoteDisplay>(new RemoteDisplayPlayerImpl());
     RemoteDisplay* remoteDisplay =
         instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player);
     return;
@@ -40,7 +39,7 @@ static void receivedThread() {
 
 static void sendThread() {
     RemoteDisplayManager& instance = RemoteDisplayManager::getInstance();
-    string name = "local8368USender";
+    string name = "RDSender";
     RemoteDisplay* remoteDisplay = instance.getRemoteDisplay(name, ROLE_SENDER, TYPE_SOCKET_NET);
     uint8_t dataBuf[] = "12345";
     while (1) {

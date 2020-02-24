@@ -3,12 +3,13 @@
  * @version:
  * @Author: Zhc Guo
  * @Date: 2020-01-14 15:37:06
- * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-02-06 09:19:03
+ * @LastEditors: Zhc Guo
+ * @LastEditTime: 2020-02-25 00:16:18
  */
 #ifndef __TRANSMISSION_COMMON_H__
 #define __TRANSMISSION_COMMON_H__
 
+#include <stdint.h>
 namespace remote_display {
 
 #define IP "127.0.0.1"
@@ -24,23 +25,13 @@ enum DataType {
     TYPE_DATA,
 };
 
-struct DisplayHeader {
-    DisplayHeader() = default;
-    DisplayHeader(uint32_t length, uint32_t type) : mLength(length), mType(type) {
+struct TransHeader {
+    TransHeader() = default;
+    TransHeader(uint32_t length, uint32_t type) : mLength(length), mType(type) {
     }
     uint32_t mLength;
     uint32_t mType;
     uint32_t reserved[6];
-};
-
-struct DisplayParam {
-    DisplayParam() = default;
-    DisplayParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps)
-        : mWidthPixels(widthPixels), mHeightPixels(heightPixels), mFps(fps) {
-    }
-    uint32_t mWidthPixels;
-    uint32_t mHeightPixels;
-    uint32_t mFps;
 };
 
 }  // namespace remote_display

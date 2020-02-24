@@ -3,8 +3,8 @@ CXXFLAG = -std=c++11
 LIBS = -lpthread
 INCLUDE = -I./ \
           -I./include
-SOURCES += ./src/TransmissionClient.cpp \
-           ./src/TransmissionServer.cpp \
+SOURCES += ./src/TransmissionClientNet.cpp \
+           ./src/TransmissionServerNet.cpp \
            ./src/RemoteDisplay.cpp \
 		   ./src/RemoteDisplayManager.cpp \
 		   ./src/RemoteDisplayManagerTest.cpp
