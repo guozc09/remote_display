@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-14 15:37:06
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 00:16:18
+ * @LastEditTime: 2020-02-25 21:17:22
  */
 #ifndef __TRANSMISSION_COMMON_H__
 #define __TRANSMISSION_COMMON_H__
@@ -18,11 +18,6 @@ namespace remote_display {
 enum TransmissonType {
     TYPE_SOCKET_LOOPBACK = 0,
     TYPE_SOCKET_NET = 1,
-};
-
-enum DataType {
-    TYPE_PARAM = 0,
-    TYPE_DATA,
 };
 
 struct TransHeader {

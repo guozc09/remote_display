@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 00:15:36
+ * @LastEditTime: 2020-02-25 21:23:17
  */
 #ifndef __TRANSMISSION_SERVER_INTERFACE_H__
 #define __TRANSMISSION_SERVER_INTERFACE_H__
@@ -20,6 +20,8 @@ class TransmissionServCbkIf {
   public:
     virtual ~TransmissionServCbkIf() = default;
     virtual int dataIsAvailable(uint32_t type, char *data, size_t dataLen) = 0;
+    virtual void devAttach(int fd) = 0;
+    virtual void devDetach(int fd) = 0;
 };
 
 class TransmissionServerIf {

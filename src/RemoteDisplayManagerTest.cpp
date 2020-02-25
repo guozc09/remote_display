@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-14 17:18:36
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-24 22:39:34
+ * @LastEditTime: 2020-02-25 21:45:41
  */
 #include <unistd.h>
 #include <iostream>
@@ -28,12 +28,27 @@ class RemoteDisplayPlayerImpl : virtual public RemoteDisplay {
     }
 };
 
+class RemoteDisplayDevImpl : virtual public RemoteDisplayDev {
+  public:
+    RemoteDisplayDevImpl() = default;
+    ~RemoteDisplayDevImpl() = default;
+    void attach(int fd) override {
+        cout << __FILE__ << " [" << __FUNCTION__ << "]@line[" << __LINE__
+             << "] fd:" << fd << " attached!!\n";
+    }
+    void detach(int fd) override {
+        cout << __FILE__ << " [" << __FUNCTION__ << "]@line[" << __LINE__
+             << "] fd:" << fd << " detached!!\n";
+    }
+};
+
 static void receivedThread() {
     RemoteDisplayManager& instance = RemoteDisplayManager::getInstance();
     string name = "RDReceiver";
     shared_ptr<RemoteDisplay> player = shared_ptr<RemoteDisplay>(new RemoteDisplayPlayerImpl());
+    shared_ptr<RemoteDisplayDev> dev = shared_ptr<RemoteDisplayDev>(new RemoteDisplayDevImpl());
     RemoteDisplay* remoteDisplay =
-        instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player);
+        instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player, dev);
     return;
 }
 

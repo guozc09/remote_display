@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-11 10:30:24
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 00:31:10
+ * @LastEditTime: 2020-02-25 21:32:48
  */
 #include "RemoteDisplay.h"
 #include <iostream>
@@ -14,6 +14,11 @@
 
 using namespace std;
 namespace remote_display {
+
+enum DataType {
+    TYPE_PARAM = 0,
+    TYPE_DATA,
+};
 
 struct DisplayParam {
     DisplayParam() = default;
@@ -47,10 +52,16 @@ class TransmissionServCbk : virtual public TransmissionServCbkIf {
             }
         }
     }
+    void devAttach(int fd) override {
+        mRDReceiver->mDev->attach(fd);
+    }
+    void devDetach(int fd) override {
+        mRDReceiver->mDev->detach(fd);
+    }
 
   private:
     RemoteDisplayReceiver *mRDReceiver;
-};  // namespace remote_display
+};
 
 RemoteDisplaySender::RemoteDisplaySender(TransmissonType type) {
     switch (type) {
@@ -93,7 +104,8 @@ int RemoteDisplaySender::processFrame(uint8_t *data, size_t length) {
 }
 
 RemoteDisplayReceiver::RemoteDisplayReceiver(TransmissonType type,
-                                             shared_ptr<RemoteDisplay> &player) {
+                                             shared_ptr<RemoteDisplay> &player,
+                                             shared_ptr<RemoteDisplayDev> &dev) {
     switch (type) {
         case TYPE_SOCKET_NET:
             mTransServCbk = new TransmissionServCbk(this);
@@ -106,7 +118,9 @@ RemoteDisplayReceiver::RemoteDisplayReceiver(TransmissonType type,
             break;
     }
     mPlayer = player;
-    mTransServ->start();
+    mDev = dev;
+    if (mTransServ)
+        mTransServ->start();
 }
 
 RemoteDisplayReceiver::~RemoteDisplayReceiver() {

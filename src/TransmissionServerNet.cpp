@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 00:44:57
+ * @LastEditTime: 2020-02-25 21:25:29
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -82,10 +82,10 @@ int TransmissionServerNet::handleData(int &sock) {
     bool isComplete = false;
     isComplete = recvAll(sock, (char *)&transHeader, sizeof(transHeader));
     if (!isComplete) {
+        mTransServCbk->devDetach(sock);
         close(sock);
         sock = -1;
         cerr << "receive error!!" << endl;
-        // detach
         return -1;
     }
     cout << "display header length = " << transHeader.mLength
@@ -111,15 +111,15 @@ int TransmissionServerNet::handleData(int &sock) {
             cerr << "mTransServCbk is null";
         
     } else {
+        mTransServCbk->devDetach(sock);
         close(sock);
         sock = -1;
         cerr << "receive error!!" << endl;
-        // detach
         return -1;
     }
 
     return 0;
-}  // namespace remote_display
+}
 
 void TransmissionServerNet::transServThread() {
     int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -161,6 +161,7 @@ void TransmissionServerNet::transServThread() {
                 continue;
             } else {
                 printf("accept successful!\n");
+                mTransServCbk->devAttach(connfd);
             }
             // updates maxi, and check if i out of limition of OPEN_MAX
             int i;
@@ -184,7 +185,6 @@ void TransmissionServerNet::transServThread() {
             if (mClient[i].fd < 0)
                 continue;  // continue the sub for cycle
             if (mClient[i].revents & (POLLRDNORM | POLLERR)) {
-                // attach
                 if (handleData(mClient[i].fd) == -1)
                     return;
             }

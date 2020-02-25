@@ -3,8 +3,8 @@
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-14 13:29:38
- * @LastEditors  : Zhc Guo
- * @LastEditTime : 2020-01-15 17:05:58
+ * @LastEditors: Zhc Guo
+ * @LastEditTime: 2020-02-25 21:35:35
  */
 #ifndef __REMOTE_DISPLAY_MANAGER_H__
 #define __REMOTE_DISPLAY_MANAGER_H__
@@ -27,7 +27,8 @@ class RemoteDisplayManager {
         return instance;
     }
     RemoteDisplay* getRemoteDisplay(string name, RemoteDisplayRole role, TransmissonType type,
-                                    shared_ptr<RemoteDisplay> player = nullptr);
+                                    shared_ptr<RemoteDisplay> player = nullptr,
+                                    shared_ptr<RemoteDisplayDev> dev = nullptr);
     void releaseRemoteDisplay(string name);
 
   private:
