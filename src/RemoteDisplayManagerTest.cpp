@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-14 17:18:36
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 21:45:41
+ * @LastEditTime: 2020-03-14 17:00:42
  */
 #include <unistd.h>
 #include <iostream>
@@ -21,10 +21,12 @@ class RemoteDisplayPlayerImpl : virtual public RemoteDisplay {
     int setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) {
         cout << __FILE__ << " [" << __FUNCTION__ << "]@line[" << __LINE__
              << "] widthPixels: " << widthPixels << " heightPixels: " << heightPixels << endl;
+        return 0;
     }
     int processFrame(uint8_t* data, size_t length) {
         cout << __FILE__ << " [" << __FUNCTION__ << "]@line[" << __LINE__ << "] data: " << data
              << " ,length: " << length << endl;
+        return 0;
     }
 };
 
@@ -47,8 +49,7 @@ static void receivedThread() {
     string name = "RDReceiver";
     shared_ptr<RemoteDisplay> player = shared_ptr<RemoteDisplay>(new RemoteDisplayPlayerImpl());
     shared_ptr<RemoteDisplayDev> dev = shared_ptr<RemoteDisplayDev>(new RemoteDisplayDevImpl());
-    RemoteDisplay* remoteDisplay =
-        instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player, dev);
+    instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player, dev);
     return;
 }
 

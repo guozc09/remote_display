@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-11 10:30:24
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 21:32:48
+ * @LastEditTime: 2020-03-14 16:53:54
  */
 #include "RemoteDisplay.h"
 #include <iostream>
@@ -51,6 +51,7 @@ class TransmissionServCbk : virtual public TransmissionServCbkIf {
                 break;
             }
         }
+        return 0;
     }
     void devAttach(int fd) override {
         mRDReceiver->mDev->attach(fd);
