@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-24 22:46:02
+ * @LastEditTime: 2020-03-29 21:48:44
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -12,46 +12,78 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "TransmissionClientNet.h"
 
 namespace remote_display {
+#define MAX_EVENTS 10
 
 int TransmissionClientNet::transmissionConnect() {
+    int ret = 0;
     struct sockaddr_in servaddr;
 
     if ((mSockCli = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
-        return -1;
+        ret = -1;
+        goto exit;
     }
 
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(PORT);
     if (inet_pton(AF_INET, IP, &servaddr.sin_addr) <= 0) {
-        return -1;
+        ret = -1;
+        goto exit;
     }
 
     for (int connCnt = 1; connCnt <= 5; connCnt++) {
         if (connect(mSockCli, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-            printf("connect error: %s(errno: %d), connect times:%d\n", strerror(errno), errno,
-                   connCnt);
+            printf("connect error: %s(errno: %d), connect times:%d\n", strerror(errno), errno, connCnt);
+            ret = -1;
         } else {
             printf("connect successful!\n");
-            return 0;
+            setnonblocking(mSockCli);
+            mEpollfd = epoll_create(10);
+            if (mEpollfd == -1) {
+                perror("epoll_create");
+                ret = -1;
+                goto exit;
+            }
+            struct epoll_event ev;
+            ev.events = EPOLLOUT | EPOLLHUP | EPOLLERR;
+            ev.data.fd = mSockCli;
+            if (epoll_ctl(mEpollfd, EPOLL_CTL_ADD, mSockCli, &ev) == -1) {
+                perror("epoll_ctl: mSockCli");
+                close(mEpollfd);
+                mEpollfd = -1;
+                ret = -1;
+                goto exit;
+            }
+            break;
         }
     }
-    return -1;
+exit:
+    if (ret == -1) {
+        close(mSockCli);
+        mSockCli = -1;
+    }
+    return ret;
 }
 
 void TransmissionClientNet::transmissionDisconnect() {
-    if (mSockCli == -1) {
-        close(mSockCli);
+    if (mSockCli != -1) {
         shutdown(mSockCli, SHUT_RDWR);
+        close(mSockCli);
         mSockCli = -1;
+    }
+    if (mEpollfd != -1) {
+        close(mEpollfd);
+        mEpollfd = -1;
     }
 }
 
@@ -66,18 +98,49 @@ int TransmissionClientNet::sendData(char* data, size_t length) {
         printf("failed!! mSockCli is -1\n");
         return -1;
     }
-
+    int timeout = 1000;  // ms
+    struct epoll_event events[MAX_EVENTS];
     while (length > 0) {
-        sendSize = send(mSockCli, data, length, 0);
-        if (sendSize < 0) {
-            printf("send data error: %s(errno: %d)\n", strerror(errno), errno);
+        int nfds = epoll_wait(mEpollfd, events, MAX_EVENTS, timeout);
+        if (nfds == -1) {
+            perror("epoll_wait");
+            return -1;
+        } else if (nfds == 0) {  // timeout
+            printf("epoll_wait timeout:%d ms\n", timeout);
             return -1;
         }
-        length = length - sendSize;
-        data += sendSize;
+        for (int n = 0; n < nfds; ++n) {
+            if (events[n].data.fd == mSockCli) {
+                if (events[n].events & EPOLLHUP || events[n].events & EPOLLERR) {
+                    printf("epoll_wait error events: 0x%08x\n", events[n].events);
+                    return -1;
+                }
+                sendSize = send(mSockCli, data, length, 0);
+                if (sendSize < 0) {
+                    perror("send data");
+                    return -1;
+                }
+                length = length - sendSize;
+                data += sendSize;
+            }
+        }
     }
 
     return sendSize;
+}
+
+void TransmissionClientNet::setnonblocking(int sock) {
+    int opts;
+    opts = fcntl(sock, F_GETFL);
+    if (opts < 0) {
+        perror("fcntl(sock,GETFL)");
+        exit(EXIT_FAILURE);
+    }
+    opts = opts | O_NONBLOCK;
+    if (fcntl(sock, F_SETFL, opts) < 0) {
+        perror("fcntl(sock,SETFL,opts)");
+        exit(EXIT_FAILURE);
+    }
 }
 
 }  // namespace remote_display

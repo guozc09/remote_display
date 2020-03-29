@@ -10,4 +10,9 @@ remotedisplay_SOURCES = src/TransmissionClientNet.cpp \
 remotedisplay_LDFLAGS = -D_GNU_SOURCE
 DEFS += -D_GNU_SOURCE -std=c++11 -Wall
 LIBS = -lpthread
-$(shell cp -u remotedisplay ./out/remotedisplay)
+
+all-am: cpout $(noinst_PROGRAMS)
+cpout:
+	$(shell mv -f $(noinst_PROGRAMS) $(CURRENTPATH)/out)
+rmout:
+	$(shell rm -f $(CURRENTPATH)/out/*)

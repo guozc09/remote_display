@@ -746,7 +746,12 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 export AM_CPPFLAGS
-$(shell cp -u remotedisplay ./out/remotedisplay)
+
+all-am: cpout $(noinst_PROGRAMS)
+cpout:
+	$(shell mv -f $(noinst_PROGRAMS) $(CURRENTPATH)/out)
+rmout:
+	$(shell rm -f $(CURRENTPATH)/out/*)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
