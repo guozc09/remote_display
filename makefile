@@ -101,10 +101,11 @@ CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_remotedisplay_OBJECTS = TransmissionClientNet.$(OBJEXT) \
-	TransmissionServerNet.$(OBJEXT) RemoteDisplay.$(OBJEXT) \
-	RemoteDisplayManager.$(OBJEXT) \
-	RemoteDisplayManagerTest.$(OBJEXT)
+am__dirstamp = $(am__leading_dot)dirstamp
+am_remotedisplay_OBJECTS = src/TransmissionClientNet.$(OBJEXT) \
+	src/TransmissionServerNet.$(OBJEXT) \
+	src/RemoteDisplay.$(OBJEXT) src/RemoteDisplayManager.$(OBJEXT) \
+	src/RemoteDisplayManagerTest.$(OBJEXT)
 remotedisplay_OBJECTS = $(am_remotedisplay_OBJECTS)
 remotedisplay_LDADD = $(LDADD)
 remotedisplay_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
@@ -167,9 +168,8 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in AUTHORS \
-	COPYING ChangeLog INSTALL NEWS README compile depcomp \
-	install-sh missing
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in COPYING \
+	INSTALL compile depcomp install-sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -187,12 +187,12 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/zhcguo/LinuxMount/remote_display/missing aclocal-1.15
+ACLOCAL = aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/zhcguo/LinuxMount/remote_display/missing autoconf
-AUTOHEADER = ${SHELL} /home/zhcguo/LinuxMount/remote_display/missing autoheader
-AUTOMAKE = ${SHELL} /home/zhcguo/LinuxMount/remote_display/missing automake-1.15
+AUTOCONF = autoconf
+AUTOHEADER = autoheader
+AUTOMAKE = automake-1.15
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -220,7 +220,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = -lpthread
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/zhcguo/LinuxMount/remote_display/missing makeinfo
+MAKEINFO = makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = remotedisplay
@@ -282,11 +282,11 @@ top_builddir = .
 top_srcdir = .
 CURRENTPATH = $(shell /bin/pwd)
 AM_CPPFLAGS = -I$(CURRENTPATH)/include
-remotedisplay_SOURCES = TransmissionClientNet.cpp \
-                        TransmissionServerNet.cpp \
-                        RemoteDisplay.cpp \
-                        RemoteDisplayManager.cpp \
-                        RemoteDisplayManagerTest.cpp
+remotedisplay_SOURCES = src/TransmissionClientNet.cpp \
+                        src/TransmissionServerNet.cpp \
+                        src/RemoteDisplay.cpp \
+                        src/RemoteDisplayManager.cpp \
+                        src/RemoteDisplayManagerTest.cpp
 
 remotedisplay_LDFLAGS = -D_GNU_SOURCE
 all: config.h
@@ -300,15 +300,15 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
-	      echo ' cd $(srcdir) && $(AUTOMAKE) --gnu'; \
-	      $(am__cd) $(srcdir) && $(AUTOMAKE) --gnu \
+	      echo ' cd $(srcdir) && $(AUTOMAKE) --foreign'; \
+	      $(am__cd) $(srcdir) && $(AUTOMAKE) --foreign \
 		&& exit 0; \
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu Makefile
+	  $(AUTOMAKE) --foreign Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -345,6 +345,22 @@ distclean-hdr:
 
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+src/$(am__dirstamp):
+	@$(MKDIR_P) src
+	@: > src/$(am__dirstamp)
+src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/$(DEPDIR)
+	@: > src/$(DEPDIR)/$(am__dirstamp)
+src/TransmissionClientNet.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/TransmissionServerNet.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/RemoteDisplay.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/RemoteDisplayManager.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/RemoteDisplayManagerTest.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 
 remotedisplay$(EXEEXT): $(remotedisplay_OBJECTS) $(remotedisplay_DEPENDENCIES) $(EXTRA_remotedisplay_DEPENDENCIES) 
 	@rm -f remotedisplay$(EXEEXT)
@@ -352,26 +368,29 @@ remotedisplay$(EXEEXT): $(remotedisplay_OBJECTS) $(remotedisplay_DEPENDENCIES) $
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/RemoteDisplay.Po
-include ./$(DEPDIR)/RemoteDisplayManager.Po
-include ./$(DEPDIR)/RemoteDisplayManagerTest.Po
-include ./$(DEPDIR)/TransmissionClientNet.Po
-include ./$(DEPDIR)/TransmissionServerNet.Po
+include src/$(DEPDIR)/RemoteDisplay.Po
+include src/$(DEPDIR)/RemoteDisplayManager.Po
+include src/$(DEPDIR)/RemoteDisplayManagerTest.Po
+include src/$(DEPDIR)/TransmissionClientNet.Po
+include src/$(DEPDIR)/TransmissionServerNet.Po
 
 .cpp.o:
-	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+	$(am__mv) $$depbase.Tpo $$depbase.Po
 #	$(AM_V_CXX)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXXCOMPILE) -c -o $@ $<
 
 .cpp.obj:
-	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+	$(am__mv) $$depbase.Tpo $$depbase.Po
 #	$(AM_V_CXX)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
@@ -628,6 +647,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f src/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -638,7 +659,7 @@ clean-am: clean-generic clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR)
+	-rm -rf src/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -686,7 +707,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR)
+	-rm -rf src/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -725,8 +746,7 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 export AM_CPPFLAGS
-vpath %.h include
-vpath %.cpp src
+$(shell cp -u remotedisplay ./out/remotedisplay)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

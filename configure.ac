@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT(remotedisplay, 1.0, guozc09@163.com)
-AM_INIT_AUTOMAKE(remotedisplay, 1.0)
+AM_INIT_AUTOMAKE([subdir-objects foreign])
 AC_CONFIG_SRCDIR([src/RemoteDisplay.cpp])
 AC_CONFIG_HEADERS([config.h])
 
@@ -26,5 +26,5 @@ AC_TYPE_UINT8_T
 # Checks for library functions.
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memset socket strerror])
-
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
