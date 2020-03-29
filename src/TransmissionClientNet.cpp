@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-03-29 21:48:44
+ * @LastEditTime: 2020-03-30 00:55:31
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -55,7 +55,7 @@ int TransmissionClientNet::transmissionConnect() {
                 goto exit;
             }
             struct epoll_event ev;
-            ev.events = EPOLLOUT | EPOLLHUP | EPOLLERR;
+            ev.events = EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLIN;
             ev.data.fd = mSockCli;
             if (epoll_ctl(mEpollfd, EPOLL_CTL_ADD, mSockCli, &ev) == -1) {
                 perror("epoll_ctl: mSockCli");
@@ -111,8 +111,8 @@ int TransmissionClientNet::sendData(char* data, size_t length) {
         }
         for (int n = 0; n < nfds; ++n) {
             if (events[n].data.fd == mSockCli) {
-                if (events[n].events & EPOLLHUP || events[n].events & EPOLLERR) {
-                    printf("epoll_wait error events: 0x%08x\n", events[n].events);
+                if (events[n].events & EPOLLHUP || events[n].events & EPOLLERR || events[n].events & EPOLLIN) { // EPOLLIN is to handle peer socket close.
+                    printf("%s @%d epoll_wait error events:0x%08x\n", __FUNCTION__, __LINE__, events[n].events);
                     return -1;
                 }
                 sendSize = send(mSockCli, data, length, 0);

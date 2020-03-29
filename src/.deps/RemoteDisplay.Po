@@ -158,12 +158,9 @@ src/RemoteDisplay.o: src/RemoteDisplay.cpp /usr/include/stdc-predef.h \
  /mnt/h/LinuxMount/remote_display/include/TransmissionClientNet.h \
  /mnt/h/LinuxMount/remote_display/include/TransmissionCommon.h \
  /mnt/h/LinuxMount/remote_display/include/TransmissionServerNet.h \
- /usr/include/poll.h /usr/include/x86_64-linux-gnu/sys/poll.h \
- /usr/include/x86_64-linux-gnu/bits/poll.h \
- /usr/include/x86_64-linux-gnu/bits/poll2.h /usr/include/c++/7/thread \
- /usr/include/c++/7/chrono /usr/include/c++/7/ratio \
- /usr/include/c++/7/limits /usr/include/c++/7/ctime \
- /usr/include/c++/7/bits/parse_numbers.h
+ /usr/include/c++/7/thread /usr/include/c++/7/chrono \
+ /usr/include/c++/7/ratio /usr/include/c++/7/limits \
+ /usr/include/c++/7/ctime /usr/include/c++/7/bits/parse_numbers.h
 
 /usr/include/stdc-predef.h:
 
@@ -562,14 +559,6 @@ src/RemoteDisplay.o: src/RemoteDisplay.cpp /usr/include/stdc-predef.h \
 /mnt/h/LinuxMount/remote_display/include/TransmissionCommon.h:
 
 /mnt/h/LinuxMount/remote_display/include/TransmissionServerNet.h:
-
-/usr/include/poll.h:
-
-/usr/include/x86_64-linux-gnu/sys/poll.h:
-
-/usr/include/x86_64-linux-gnu/bits/poll.h:
-
-/usr/include/x86_64-linux-gnu/bits/poll2.h:
 
 /usr/include/c++/7/thread:
 

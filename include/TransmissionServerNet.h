@@ -4,17 +4,14 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-24 23:50:38
+ * @LastEditTime: 2020-03-29 23:38:03
  */
 #ifndef __TRANSMISSION_SERVER_NET_H__
 #define __TRANSMISSION_SERVER_NET_H__
 
-#include <poll.h>
 #include <thread>
 
 #include "TransmissionServerInterface.h"
-
-#define OPEN_MAX 10
 
 using namespace std;
 namespace remote_display {
@@ -29,11 +26,11 @@ class TransmissionServerNet : virtual public TransmissionServerIf {
 
   private:
     bool recvAll(int sock, char* buffer, size_t size);
-    int handleData(int& sock);
+    int handleData(int sock);
     void transServThread();
     char *mDataBuf{nullptr};
     unsigned mDataLen{0};
-    struct pollfd mClient[OPEN_MAX];
+    int mEpollfd{-1};
     thread* mTransThread{nullptr};
     TransmissionServCbkIf* mTransServCbk;
 };

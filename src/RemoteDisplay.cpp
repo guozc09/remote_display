@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-11 10:30:24
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-03-14 16:53:54
+ * @LastEditTime: 2020-03-29 23:43:10
  */
 #include "RemoteDisplay.h"
 #include <iostream>
@@ -84,24 +84,38 @@ RemoteDisplaySender::~RemoteDisplaySender() {
 }
 
 int RemoteDisplaySender::setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) {
+    int ret = 0;
     if (mTransCli) {
         TransHeader transHeader(sizeof(DisplayParam), TYPE_PARAM);
         DisplayParam displayParam(widthPixels, heightPixels, fps);
-        mTransCli->sendData((char *)(&transHeader), sizeof(TransHeader));
-        mTransCli->sendData((char *)(&displayParam), sizeof(DisplayParam));
-        return 0;
+        ret = mTransCli->sendData((char *)(&transHeader), sizeof(TransHeader));
+        if (ret < 0) {
+            goto exit;
+        }
+        ret = mTransCli->sendData((char *)(&displayParam), sizeof(DisplayParam));
+        if (ret < 0) {
+            goto exit;
+        }
     }
-    return -1;
+exit:
+    return (ret < 0 ? -1 : 0);
 }
 
 int RemoteDisplaySender::processFrame(uint8_t *data, size_t length) {
+    int ret = 0;
     if (mTransCli) {
         TransHeader transHeader(length, TYPE_DATA);
-        mTransCli->sendData((char *)(&transHeader), sizeof(TransHeader));
-        mTransCli->sendData((char *)data, length);
-        return 0;
+        ret = mTransCli->sendData((char *)(&transHeader), sizeof(TransHeader));
+        if (ret < 0) {
+            goto exit;
+        }
+        ret = mTransCli->sendData((char *)data, length);
+        if (ret < 0) {
+            goto exit;
+        }
     }
-    return -1;
+exit:
+    return (ret < 0 ? -1 : 0);
 }
 
 RemoteDisplayReceiver::RemoteDisplayReceiver(TransmissonType type,
@@ -135,19 +149,19 @@ RemoteDisplayReceiver::~RemoteDisplayReceiver() {
 }
 
 int RemoteDisplayReceiver::setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) {
+    int ret = 0;
     if (mPlayer) {
-        mPlayer->setParam(widthPixels, heightPixels, fps);
-        return 0;
+        ret = mPlayer->setParam(widthPixels, heightPixels, fps);
     }
-    return -1;
+    return ret;
 }
 
 int RemoteDisplayReceiver::processFrame(uint8_t *data, size_t length) {
+    int ret = 0;
     if (mPlayer) {
-        mPlayer->processFrame(data, length);
-        return 0;
+        ret = mPlayer->processFrame(data, length);
     }
-    return -1;
+    return ret;
 }
 
 }  // namespace remote_display
