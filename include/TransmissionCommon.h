@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Transmisson common header
+ * @Description: Transmission common header
  * @version:
  * @Author: Zhc Guo
  * @Date: 2020-01-14 15:37:06
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 21:17:22
+ * @LastEditTime: 2020-04-21 22:00:35
  */
 #ifndef __TRANSMISSION_COMMON_H__
 #define __TRANSMISSION_COMMON_H__
@@ -15,7 +15,7 @@ namespace remote_display {
 #define IP "127.0.0.1"
 #define PORT 6666
 
-enum TransmissonType {
+enum TransmissionType {
     TYPE_SOCKET_LOOPBACK = 0,
     TYPE_SOCKET_NET = 1,
 };

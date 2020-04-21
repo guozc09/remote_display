@@ -1,5 +1,5 @@
 /*
- * @Descripttion: Remote video playback interface
+ * @Description: Remote video playback interface
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-11 10:30:24
@@ -64,7 +64,7 @@ class TransmissionServCbk : virtual public TransmissionServCbkIf {
     RemoteDisplayReceiver *mRDReceiver;
 };
 
-RemoteDisplaySender::RemoteDisplaySender(TransmissonType type) {
+RemoteDisplaySender::RemoteDisplaySender(TransmissionType type) {
     switch (type) {
         case TYPE_SOCKET_NET:
             mTransCli = new TransmissionClientNet();
@@ -118,7 +118,7 @@ exit:
     return (ret < 0 ? -1 : 0);
 }
 
-RemoteDisplayReceiver::RemoteDisplayReceiver(TransmissonType type,
+RemoteDisplayReceiver::RemoteDisplayReceiver(TransmissionType type,
                                              shared_ptr<RemoteDisplay> &player,
                                              shared_ptr<RemoteDisplayDev> &dev) {
     switch (type) {

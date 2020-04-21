@@ -1,10 +1,10 @@
 /*
- * @Descripttion: RemoteDisplay manager test module
+ * @Description: RemoteDisplay manager test module
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-14 17:18:36
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-03-14 17:00:42
+ * @LastEditTime: 2020-04-21 21:59:30
  */
 #include <unistd.h>
 #include <iostream>
@@ -49,7 +49,7 @@ static void receivedThread() {
     string name = "RDReceiver";
     shared_ptr<RemoteDisplay> player = shared_ptr<RemoteDisplay>(new RemoteDisplayPlayerImpl());
     shared_ptr<RemoteDisplayDev> dev = shared_ptr<RemoteDisplayDev>(new RemoteDisplayDevImpl());
-    instance.getRemoteDisplay(name, ROLE_RECEVIER, TYPE_SOCKET_NET, player, dev);
+    instance.getRemoteDisplay(name, ROLE_RECEIVER, TYPE_SOCKET_NET, player, dev);
     return;
 }
 

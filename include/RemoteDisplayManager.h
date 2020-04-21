@@ -1,5 +1,5 @@
 /*
- * @Descripttion: RemoteDisplay manager module
+ * @Description: RemoteDisplay manager module
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-14 13:29:38
@@ -26,7 +26,7 @@ class RemoteDisplayManager {
         static RemoteDisplayManager instance;
         return instance;
     }
-    RemoteDisplay* getRemoteDisplay(string name, RemoteDisplayRole role, TransmissonType type,
+    RemoteDisplay* getRemoteDisplay(string name, RemoteDisplayRole role, TransmissionType type,
                                     shared_ptr<RemoteDisplay> player = nullptr,
                                     shared_ptr<RemoteDisplayDev> dev = nullptr);
     void releaseRemoteDisplay(string name);

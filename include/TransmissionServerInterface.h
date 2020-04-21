@@ -1,5 +1,5 @@
 /*
- * @Descripttion: Transport server interface
+ * @Description: Transport server interface
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35

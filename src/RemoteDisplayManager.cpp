@@ -1,5 +1,5 @@
 /*
- * @Descripttion: RemoteDisplay manager module
+ * @Description: RemoteDisplay manager module
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-14 13:29:54
@@ -11,7 +11,7 @@
 namespace remote_display {
 
 RemoteDisplay* RemoteDisplayManager::getRemoteDisplay(string name, RemoteDisplayRole role,
-                                                      TransmissonType type,
+                                                      TransmissionType type,
                                                       shared_ptr<RemoteDisplay> player,
                                                       shared_ptr<RemoteDisplayDev> dev) {
     map<string, RemoteDisplay*>::iterator iter = mRemoteDisplayMap.find(name);

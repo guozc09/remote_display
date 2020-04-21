@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Transport server net
+ * @Description: Transport server net
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-03-29 23:38:03
+ * @LastEditTime: 2020-04-21 22:25:52
  */
 #ifndef __TRANSMISSION_SERVER_NET_H__
 #define __TRANSMISSION_SERVER_NET_H__
@@ -30,7 +30,7 @@ class TransmissionServerNet : virtual public TransmissionServerIf {
     void transServThread();
     char *mDataBuf{nullptr};
     unsigned mDataLen{0};
-    int mEpollfd{-1};
+    int mEpollFd{-1};
     thread* mTransThread{nullptr};
     TransmissionServCbkIf* mTransServCbk;
 };

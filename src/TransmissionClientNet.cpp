@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Transport client net
+ * @Description: Transport client net
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-03-30 00:55:31
+ * @LastEditTime: 2020-04-21 22:03:53
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -48,8 +48,8 @@ int TransmissionClientNet::transmissionConnect() {
         } else {
             printf("connect successful!\n");
             setnonblocking(mSockCli);
-            mEpollfd = epoll_create(10);
-            if (mEpollfd == -1) {
+            mEpollFd = epoll_create(10);
+            if (mEpollFd == -1) {
                 perror("epoll_create");
                 ret = -1;
                 goto exit;
@@ -57,10 +57,10 @@ int TransmissionClientNet::transmissionConnect() {
             struct epoll_event ev;
             ev.events = EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLIN;
             ev.data.fd = mSockCli;
-            if (epoll_ctl(mEpollfd, EPOLL_CTL_ADD, mSockCli, &ev) == -1) {
+            if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, mSockCli, &ev) == -1) {
                 perror("epoll_ctl: mSockCli");
-                close(mEpollfd);
-                mEpollfd = -1;
+                close(mEpollFd);
+                mEpollFd = -1;
                 ret = -1;
                 goto exit;
             }
@@ -81,9 +81,9 @@ void TransmissionClientNet::transmissionDisconnect() {
         close(mSockCli);
         mSockCli = -1;
     }
-    if (mEpollfd != -1) {
-        close(mEpollfd);
-        mEpollfd = -1;
+    if (mEpollFd != -1) {
+        close(mEpollFd);
+        mEpollFd = -1;
     }
 }
 
@@ -101,7 +101,7 @@ int TransmissionClientNet::sendData(char* data, size_t length) {
     int timeout = 1000;  // ms
     struct epoll_event events[MAX_EVENTS];
     while (length > 0) {
-        int nfds = epoll_wait(mEpollfd, events, MAX_EVENTS, timeout);
+        int nfds = epoll_wait(mEpollFd, events, MAX_EVENTS, timeout);
         if (nfds == -1) {
             perror("epoll_wait");
             return -1;

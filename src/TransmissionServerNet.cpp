@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Transport server net
+ * @Description: Transport server net
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-03-30 00:36:09
+ * @LastEditTime: 2020-04-21 21:55:03
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -32,14 +32,14 @@ namespace remote_display {
 #define MAX_EVENTS 10
 
 TransmissionServerNet::TransmissionServerNet(TransmissionServCbkIf *transServCbk) : mTransServCbk(transServCbk) {
-    mEpollfd = -1;
+    mEpollFd = -1;
 }
 
 TransmissionServerNet::~TransmissionServerNet() {
     if (mDataBuf)
         free(mDataBuf);
-    if (mEpollfd != -1)
-        close(mEpollfd);
+    if (mEpollFd != -1)
+        close(mEpollFd);
 }
 
 void TransmissionServerNet::start() {
@@ -70,7 +70,7 @@ bool TransmissionServerNet::recvAll(int sock, char *buffer, size_t size) {
 
 int TransmissionServerNet::handleData(int sock) {
     if (sock == -1) {
-        cerr << "falied!! Invalid sock is " << sock << endl;
+        cerr << "failed!! Invalid sock is " << sock << endl;
         return -1;
     }
     TransHeader transHeader;
@@ -138,20 +138,20 @@ void TransmissionServerNet::transServThread() {
     struct epoll_event ev, events[MAX_EVENTS];
     int conn_sock, nfds;
 
-    mEpollfd = epoll_create(10);
-    if (mEpollfd == -1) {
+    mEpollFd = epoll_create(10);
+    if (mEpollFd == -1) {
         perror("epoll_create");
         return;
     }
 
     ev.events = EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
     ev.data.fd = listen_sock;
-    if (epoll_ctl(mEpollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
+    if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
         perror("epoll_ctl: listen_sock");
         return;
     }
     for (;;) {
-        nfds = epoll_wait(mEpollfd, events, MAX_EVENTS, -1);
+        nfds = epoll_wait(mEpollFd, events, MAX_EVENTS, -1);
         if (nfds == -1) {
             perror("epoll_wait");
             return;
@@ -172,7 +172,7 @@ void TransmissionServerNet::transServThread() {
                 }
                 ev.events = EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
                 ev.data.fd = conn_sock;
-                if (epoll_ctl(mEpollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
+                if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
                     perror("epoll_ctl: conn_sock");
                     return;
                 }
@@ -180,7 +180,7 @@ void TransmissionServerNet::transServThread() {
                 mTransServCbk->devAttach(conn_sock);
             } else {
                 if (handleData(events[n].data.fd) == -1) {
-                    if (epoll_ctl(mEpollfd, EPOLL_CTL_DEL, events[n].data.fd, NULL) == -1)
+                    if (epoll_ctl(mEpollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL) == -1)
                         return;
                 }
             }

@@ -1,10 +1,10 @@
 /*
- * @Descripttion: Remote video playback interface
+ * @Description: Remote video playback interface
  * @version: 0.0.1
  * @Author: Zhc Guo
  * @Date: 2020-01-11 10:30:09
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-02-25 21:33:30
+ * @LastEditTime: 2020-04-21 22:25:27
  */
 #ifndef __REMOTE_DISPLAY_H__
 #define __REMOTE_DISPLAY_H__
@@ -20,7 +20,7 @@ namespace remote_display {
 
 enum RemoteDisplayRole {
     ROLE_SENDER = 0,
-    ROLE_RECEVIER,
+    ROLE_RECEIVER,
 };
 
 class RemoteDisplay {
@@ -39,7 +39,7 @@ class RemoteDisplayDev {
 
 class RemoteDisplaySender : virtual public RemoteDisplay {
   public:
-    RemoteDisplaySender(TransmissonType type);
+    RemoteDisplaySender(TransmissionType type);
     ~RemoteDisplaySender();
     int setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) override;
     int processFrame(uint8_t *data, size_t length) override;
@@ -50,7 +50,7 @@ class RemoteDisplaySender : virtual public RemoteDisplay {
 
 class RemoteDisplayReceiver : virtual public RemoteDisplay {
   public:
-    RemoteDisplayReceiver(TransmissonType type, shared_ptr<RemoteDisplay> &player, shared_ptr<RemoteDisplayDev> &dev);
+    RemoteDisplayReceiver(TransmissionType type, shared_ptr<RemoteDisplay> &player, shared_ptr<RemoteDisplayDev> &dev);
     ~RemoteDisplayReceiver();
     int setParam(uint32_t widthPixels, uint32_t heightPixels, uint32_t fps) override;
     int processFrame(uint8_t *data, size_t length) override;
