@@ -4,7 +4,7 @@
  * @Author: Zhc Guo
  * @Date: 2020-01-12 12:37:35
  * @LastEditors: Zhc Guo
- * @LastEditTime: 2020-04-21 22:03:53
+ * @LastEditTime: 2020-06-04 22:04:49
  */
 #include <arpa/inet.h>
 #include <errno.h>
@@ -42,7 +42,8 @@ int TransmissionClientNet::transmissionConnect() {
     }
 
     for (int connCnt = 1; connCnt <= 5; connCnt++) {
-        if (connect(mSockCli, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+        int err = connect(mSockCli, (struct sockaddr*)&servaddr, sizeof(servaddr));
+        if (err && err != EINPROGRESS) {
             printf("connect error: %s(errno: %d), connect times:%d\n", strerror(errno), errno, connCnt);
             ret = -1;
         } else {
