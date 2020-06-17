@@ -1,18 +1,15 @@
-CURRENTPATH = $(shell /bin/pwd)
-AM_CPPFLAGS = -I$(CURRENTPATH)/include
-export AM_CPPFLAGS
-noinst_PROGRAMS = remotedisplay
-remotedisplay_SOURCES = src/TransmissionClientNet.cpp \
+bin_PROGRAMS = remote_display
+remote_display_SOURCES = src/TransmissionClientNet.cpp \
                         src/TransmissionServerNet.cpp \
                         src/RemoteDisplay.cpp \
                         src/RemoteDisplayManager.cpp \
                         src/RemoteDisplayManagerTest.cpp
-remotedisplay_LDFLAGS = -D_GNU_SOURCE
-DEFS += -D_GNU_SOURCE -std=c++11 -Wall
-LIBS = -lpthread
+remote_display_CXXFLAGS = -I./include
+remote_display_CXXFLAGS += -std=c++11 -Wall
+LIBS = -D_GNU_SOURCE -lpthread
 
-all-am: cpout $(noinst_PROGRAMS)
-cpout:
-	$(shell mv -f $(noinst_PROGRAMS) $(CURRENTPATH)/out)
+outdir = ./out
+out_DATA = $(bin_PROGRAMS)
+
 rmout:
-	$(shell rm -f $(CURRENTPATH)/out/*)
+	$(shell rm -f ./out/*)
